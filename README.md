@@ -25,6 +25,7 @@ This tool fetches your commit history from private GitLab repositories and impor
 -	Automated Daily Imports: Syncs your GitLab activity with GitHub automatically each day.
 -	Manual Imports: Allows on-demand updates.
 -	Secure Data Handling: Requires minimal permissions and uses GitHub repository secrets for configuration.
+-	Codeberg Support: Optionally mirror Codeberg commits to GitHub alongside your GitLab activity.
 
 ## Setup
 ### 1. Environmental Variables
@@ -38,6 +39,11 @@ This tool fetches your commit history from private GitLab repositories and impor
         | `GITLAB_TOKEN`    | GitLab personal access token (read permissions only)                   |
         | `ORIGIN_TOKEN`    | GitHub personal access token (with write permissions for auto-push)    |
         | `ORIGIN_REPO_URL` | HTTPS URL of your GitHub repository (ensure it has a `.git` extension) |
+        | `CODEBERG_BASE_URL` | URL of your Codeberg instance (e.g., `https://codeberg.org`)          |
+        | `CODEBERG_USERNAME` | Your Codeberg username                                                |
+        | `CODEBERG_TOKEN`   | Codeberg personal access token (read permissions for repositories)    |
+
+> **Optional:** Set the `CODEBERG_*` secrets if you also want to import contributions from Codeberg before pushing them to GitHub.
 
 ### 2. Automatic Imports (Recommended)
 This approach will automatically keep your activity up to date. The program is being run daily at midnight UTC.
@@ -72,6 +78,9 @@ export BASE_URL=https://gitlab.com
 export GITLAB_USERNAME=your_gitlab_username
 export GH_USERNAME=your_github_username
 export COMMITER_EMAIL=your_email@example.com
+export CODEBERG_BASE_URL=https://codeberg.org
+export CODEBERG_USERNAME=your_codeberg_username
+export CODEBERG_TOKEN=your_codeberg_token
 ...
 ```
 3. Run the tool binary whenever you want to sync your activity.

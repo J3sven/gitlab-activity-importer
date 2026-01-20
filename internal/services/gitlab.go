@@ -165,7 +165,7 @@ func GetProjectCommits(projectId int, gitlabUserName string) ([]internal.Commit,
 	return allCommits, nil
 }
 
-func FetchAllCommits(projectIds []int, gitlabUserName string, commitChannel chan []internal.Commit) {
+func FetchGitLabCommits(projectIds []int, gitlabUserName string, commitChannel chan []internal.Commit) {
 	var wg sync.WaitGroup
 	var validCommitsFound atomic.Bool
 
@@ -193,6 +193,4 @@ func FetchAllCommits(projectIds []int, gitlabUserName string, commitChannel chan
 	if !validCommitsFound.Load() {
 		log.Println("No valid commits found across any projects")
 	}
-
-	close(commitChannel)
 }

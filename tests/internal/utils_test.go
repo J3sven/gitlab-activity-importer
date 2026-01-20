@@ -18,6 +18,9 @@ func clearEnvVars(t *testing.T) {
 		"COMMITER_EMAIL",
 		"ORIGIN_REPO_URL",
 		"ORIGIN_TOKEN",
+		"CODEBERG_BASE_URL",
+		"CODEBERG_USERNAME",
+		"CODEBERG_TOKEN",
 	}
 
 	for _, v := range vars {
@@ -98,5 +101,31 @@ func TestCheckEnvVariables(t *testing.T) {
 				t.Errorf("expected error message to contain '%s', got '%s'", tt.errorMsg, err.Error())
 			}
 		})
+	}
+}
+
+func TestIsCodebergSyncEnabled(t *testing.T) {
+	clearEnvVars(t)
+	t.Cleanup(func() {
+		clearEnvVars(t)
+	})
+
+	if internal.IsCodebergSyncEnabled() {
+		t.Fatal("expected Codeberg sync to be disabled by default")
+	}
+
+	os.Setenv("CODEBERG_BASE_URL", "https://codeberg.org")
+	os.Setenv("CODEBERG_USERNAME", "codeberg-user")
+	if internal.IsCodebergSyncEnabled() {
+		t.Fatal("expected Codeberg sync to remain disabled until token is provided")
+	}
+	defer os.Unsetenv("CODEBERG_BASE_URL")
+	defer os.Unsetenv("CODEBERG_USERNAME")
+
+	os.Setenv("CODEBERG_TOKEN", "token123")
+	defer os.Unsetenv("CODEBERG_TOKEN")
+
+	if !internal.IsCodebergSyncEnabled() {
+		t.Fatal("expected Codeberg sync to be enabled when all envs are present")
 	}
 }

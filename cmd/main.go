@@ -45,14 +45,34 @@ func main() {
 		log.Fatalf("Error pulling latest changes: %v", err)
 	}
 
-	commitChannel := make(chan []internal.Commit, len(projectIds))
+	commitChannel := make(chan []internal.Commit)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
+	var fetchWG sync.WaitGroup
+	fetchWG.Add(1)
+	go func() {
+		defer fetchWG.Done()
+		services.FetchGitLabCommits(projectIds, os.Getenv("GITLAB_USERNAME"), commitChannel)
+	}()
+
+	if internal.IsCodebergSyncEnabled() {
+		fetchWG.Add(1)
+		go func() {
+			defer fetchWG.Done()
+			services.FetchCodebergCommits(os.Getenv("CODEBERG_USERNAME"), commitChannel)
+		}()
+	}
+
+	go func() {
+		fetchWG.Wait()
+		close(commitChannel)
+	}()
+
+	var commitWG sync.WaitGroup
+	commitWG.Add(1)
 
 	var totalCommitsCreated int
 	go func() {
-		defer wg.Done()
+		defer commitWG.Done()
 		totalCommits := 0
 		for commits := range commitChannel {
 			if localCommits, err := services.CreateLocalCommit(repo, commits); err == nil {
@@ -65,9 +85,7 @@ func main() {
 		log.Printf("Imported %v commits.\n", totalCommits)
 	}()
 
-	services.FetchAllCommits(projectIds, os.Getenv("GITLAB_USERNAME"), commitChannel)
-
-	wg.Wait()
+	commitWG.Wait()
 
 	if totalCommitsCreated > 0 {
 		if err := services.PushLocalCommits(repo); err != nil {

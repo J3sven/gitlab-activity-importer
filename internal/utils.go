@@ -68,3 +68,9 @@ func GetHomeDirectory() string {
 	}
 	return homeDir
 }
+
+func IsCodebergSyncEnabled() bool {
+	return os.Getenv("CODEBERG_BASE_URL") != "" &&
+		os.Getenv("CODEBERG_USERNAME") != "" &&
+		os.Getenv("CODEBERG_TOKEN") != ""
+}
